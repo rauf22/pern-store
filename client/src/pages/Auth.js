@@ -1,12 +1,36 @@
-import React from 'react';
+import { observer } from 'mobx-react-lite';
+import React, { useContext, useState } from 'react';
 import { Button, Card, Container, Form, Row } from 'react-bootstrap';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LOGIN_ROUTE, REGISTRATION_ROUTE } from '../utils/consts';
+import { useNavigate } from "react-router-dom";
+import { Context } from '../index';
+import { login, registration } from '../http/userAPI';
+import { LOGIN_ROUTE, REGISTRATION_ROUTE, SHOP_ROUTE } from '../utils/consts';
 
-const Auth = () => {
+const Auth = observer(() => {
+  const {user} = useContext(Context)
   const location = useLocation()
+  const navigate = useNavigate();
   const isLogin = location.pathname === LOGIN_ROUTE
-  console.log(location)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const click = async () => {
+    try {
+      let data;
+      if (isLogin) {
+        const data = await login(email, password)
+      } else {
+        const data = await registration(email, password)
+      }
+      user.setUser(data)
+      user.setIsAuth(true)
+      navigate(SHOP_ROUTE)
+    } catch (e) {
+      alert(e.response.data.message)
+    }
+  }
+
   return (
     <Container
       className="d-flex justify-content-center align-items-center"
@@ -18,32 +42,47 @@ const Auth = () => {
           <Form.Control 
             className="mt-3"
             placeholder="Введите ваш email..."
+            value={email}
+            onChange={e => setEmail(e.target.value)}
           />
           <Form.Control 
             className="mt-3"
             placeholder="Введите ваш пароль..."
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            type="password"
           />
           <Row className="d-flex justify-content-between mt-3 pl-3 pr-3">
-            {isLogin ?
-              <div >
-                Нет аккаунта? <NavLink to={REGISTRATION_ROUTE}>Зарегистрируйся!</NavLink>
-              </div>
-            :
-              <div >
-                  Есть аккаунт? <NavLink to={LOGIN_ROUTE}>Войдите!</NavLink>
-              </div>
+            <div className="d-flex justify-content-between">
 
-            }
-            <Button
-              variant={"outline-success"}
-              >
-                {isLogin ? 'Войти' : 'Зарегистрироваться'}
-            </Button>
+              <div>
+
+                {isLogin ?
+                  <div >
+                    Нет аккаунта? <NavLink to={REGISTRATION_ROUTE}>Зарегистрируйся!</NavLink>
+                  </div>
+                :
+                  <div >
+                      Есть аккаунт? <NavLink to={LOGIN_ROUTE}>Войдите!</NavLink>
+                  </div>
+
+                }
+              </div>
+              <div>
+
+                <Button
+                  variant={"outline-success"}
+                  onClick={click}
+                  >
+                    {isLogin ? 'Войти' : 'Зарегистрироваться'}
+                </Button>
+              </div>
+            </div>
           </Row>
         </Form>
       </Card>
     </Container>
   );
-};
+});
 
 export default Auth;

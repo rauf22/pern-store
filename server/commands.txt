@@ -1,3 +1,9 @@
 npm init -y
 npm install express pg pg-hstore sequelize cors dotenv
 npm install -D nodemon
+
+
+Во вкладке DeviceItem.js в новой версии react-router-dom v6 хук useHistory  заменён  на useNavigate :
+import { useNavigate } from "react-router-dom";
+const navigate = useNavigate();
+onClick={() => navigate(DEVICE_ROUTE + "/" + device.id)}
